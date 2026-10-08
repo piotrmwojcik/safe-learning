@@ -55,6 +55,8 @@ def get_train_fn(cfg):
         restore_checkpoint_path = get_wandb_checkpoint(
             cfg.training.wandb_id, cfg.wandb.entity
         )
+    elif cfg.training.get("restore_checkpoint_path"):
+        restore_checkpoint_path = cfg.restore_checkpoint_path
     else:
         restore_checkpoint_path = None
     if cfg.agent.name == "sac":
