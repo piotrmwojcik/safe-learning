@@ -1,5 +1,7 @@
 import json
 import logging
+import numpy as np
+import mediapy as media
 import os
 from queue import Queue
 from threading import Thread
@@ -126,7 +128,30 @@ class JsonlWriter:
         name: str = "policy",
         fps: int | float = 30,
     ):
-        pass
+        images = np.asarray(images)
+
+        print("Video shape before conversion:", images.shape)
+
+        # [N, T, C, H, W] -> use first evaluation environment
+        if images.ndim == 5:
+
+            images = images[0]
+
+        # [T, C, H, W] -> [T, H, W, C]
+        if images.ndim == 4 and images.shape[1] in (1, 3, 4):
+            images = np.transpose(images, (0, 2, 3, 1))
+
+        print("Video shape after conversion:", images.shape)
+
+        output_path = f"{name}_{step}.mp4"
+
+        # name may contain e.g. "eval/video"
+        output_dir = os.path.dirname(output_path)
+        if output_dir:
+            os.makedirs(output_dir, exist_ok=True)
+
+        media.write_video(output_path, images, fps=fps)
+        print(f"Saved video to {output_path}")
 
     def log_artifact(
         self,
@@ -168,16 +193,7 @@ class WeightAndBiasesWriter:
         name: str = "policy",
         fps: int | float = 30,
     ):
-        self._handle.log(
-            {
-                name: self._handle.Video(
-                    np.array(images, copy=False),
-                    fps=int(fps),
-                    caption=name,
-                )
-            },
-            step=step,
-        )
+        pass
 
     def log_artifact(
         self,

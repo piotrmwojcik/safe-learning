@@ -340,7 +340,19 @@ def make_losses(
         mask = expand(data.discount)[..., None]
         total_loss = total_loss * mask
         total_loss = jnp.mean(total_loss)
-        return total_loss
+        # Diagnostics use the same normalized (and possibly clipped) observation
+        # coordinates as the loss. They cover all transitions in the batch.
+        error_per_model = jnp.square(next_obs_pred - next_obs[None]).mean(axis=(1, 2))
+        model_metrics = {
+            "model_obs_disagreement": next_obs_pred.std(axis=0).mean(),
+            "model_obs_ensemble_mean_mse": jnp.square(
+                next_obs_pred.mean(axis=0) - next_obs
+            ).mean(),
+        }
+        model_metrics.update(
+            {f"model_obs_mse_{i}": error_per_model[i] for i in range(next_obs_pred.shape[0])}
+        )
+        return total_loss, model_metrics
 
     backup_critic_loss: Optional[
         Callable[

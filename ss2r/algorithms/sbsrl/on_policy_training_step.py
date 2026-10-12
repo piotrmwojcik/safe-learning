@@ -341,7 +341,7 @@ def make_on_policy_training_step(
         # TODO (yarden): can remove this
         key, _ = jax.random.split(key)
         transitions = float32(transitions)
-        model_loss, model_params, model_optimizer_state = model_update(
+        (model_loss, model_metrics), model_params, model_optimizer_state = model_update(
             training_state.model_params,
             training_state.normalizer_params,
             transitions,
@@ -352,7 +352,7 @@ def make_on_policy_training_step(
             model_optimizer_state=model_optimizer_state,
             model_params=model_params,
         )
-        metrics = {"model_loss": model_loss}
+        metrics = {"model_loss": model_loss, **model_metrics}
         return (new_training_state, key), metrics
 
     def run_experience_step(
