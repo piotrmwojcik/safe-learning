@@ -6,6 +6,8 @@ defaults:
   - penalizer: multi_lagrangian
 
 name: sbsrl
+record_model_rollouts: false
+model_video_steps: 200
 learning_rate: 3e-4
 critic_learning_rate: 3e-4
 model_learning_rate: 3e-4

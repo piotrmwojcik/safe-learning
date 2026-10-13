@@ -259,6 +259,7 @@ def train(
     learn_from_scratch: bool = False,
     target_entropy: float | None = None,
     pessimistic_q: bool = False,
+    model_rollout_callback: Optional[Callable] = None,
 ):
     if min_replay_size >= num_timesteps:
         raise ValueError(
@@ -911,6 +912,15 @@ def train(
         )
         logging.info(metrics)
         progress_fn(current_step, metrics)
+        if model_rollout_callback is not None:
+            model_rollout_callback(
+                sbsrl_network,
+                training_state,
+                eval_env,
+                make_policy,
+                current_step,
+                num_eval_envs,
+            )
 
     total_steps = current_step
     assert total_steps >= num_timesteps

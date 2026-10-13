@@ -24,6 +24,22 @@ def get_train_fn(cfg, checkpoint_path, restore_checkpoint_path):
     import ss2r.algorithms.sbsrl.train as sbsrl
 
     agent_cfg = dict(cfg.agent)
+    record_models = agent_cfg.pop("record_model_rollouts", False)
+    video_steps = agent_cfg.pop("model_video_steps", 200)
+    model_rollout_callback = None
+    if record_models:
+        if cfg.environment.task_name != "SafeCartpoleSwingup":
+            raise ValueError(
+                "Model rollout videos currently support SafeCartpoleSwingup only"
+            )
+        from ss2r.algorithms.sbsrl.model_video import CartpoleModelRecorder
+
+        model_rollout_callback = CartpoleModelRecorder(
+            steps=video_steps,
+            dt=cfg.environment.task_params.ctrl_dt * cfg.training.action_repeat,
+            seed=cfg.training.seed,
+            position_bound=cfg.environment.task_params.slider_position_bound,
+        )
     training_cfg = {
         k: v
         for k, v in cfg.training.items()
@@ -101,5 +117,6 @@ def get_train_fn(cfg, checkpoint_path, restore_checkpoint_path):
         get_experience_fn=data_collection,
         make_training_step_fn=training_step_fn,
         restore_checkpoint_path=restore_checkpoint_path,
+        model_rollout_callback=model_rollout_callback,
     )
     return train_fn
