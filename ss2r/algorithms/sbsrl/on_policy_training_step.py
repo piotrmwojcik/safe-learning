@@ -544,7 +544,8 @@ def make_on_policy_training_step(
             training_key = key
         model_buffer_state, transitions = model_replay_buffer.sample(model_buffer_state)
         cost_metrics = {}
-        cost_metrics["real_stage_cost"] = transitions.extras["state_extras"]["cost"]
+        if safe:
+            cost_metrics["real_stage_cost"] = transitions.extras["state_extras"]["cost"]
         # Change the front dimension of transitions so 'update_step' is called
         # grad_updates_per_step times by the scan.
         tmp_transitions = jax.tree_util.tree_map(
