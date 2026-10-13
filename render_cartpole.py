@@ -1,10 +1,12 @@
 import functools
+import os
 from pathlib import Path
 
 import jax
 import jax.nn as jnn
 import numpy as np
 import mediapy as media
+import imageio_ffmpeg
 
 from brax.training.agents.sac import checkpoint
 from hydra import compose, initialize
@@ -12,6 +14,11 @@ from hydra import compose, initialize
 from ss2r import benchmark_suites
 from ss2r.algorithms.sbsrl import networks as sbsrl_networks
 
+
+ffmpeg_path = imageio_ffmpeg.get_ffmpeg_exe()
+os.environ["IMAGEIO_FFMPEG_EXE"] = ffmpeg_path
+
+print("Using ffmpeg:", ffmpeg_path)
 
 RUN_DIR = Path("outputs/2026-10-08/13-41-05")
 OUTPUT = "cartpole_sbsrl.mp4"
